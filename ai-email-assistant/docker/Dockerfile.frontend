@@ -1,0 +1,28 @@
+# Use Node.js Alpine as base image for smaller size and better security
+FROM node:20-alpine as builder
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies and cleanup in a single layer
+RUN apk add --no-cache libc6-compat && \
+    npm install -g npm@latest
+
+# Copy package files
+COPY ../frontend/package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy frontend source code
+COPY ../frontend/ .
+
+# Build the React application and install serve
+RUN npm run build && \
+    npm install -g serve
+
+# Expose port for the frontend
+EXPOSE 3000
+
+# Start the application
+CMD ["serve", "-s", "build", "-l", "3000"]
